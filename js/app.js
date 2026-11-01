@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MAKANYUKS - MAIN APP ENGINE (FIXED)
+   MAKANYUKS - APP ENGINE (FULL FIX)
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -16,6 +16,7 @@ const App = {
 
   init() {
     this.bindNavigation();
+    this.bindHeaderActions();
     this.bindNotificationButtons();
     this.bindHistoryEvents();
     this.bindModalEvents();
@@ -25,18 +26,77 @@ const App = {
     if (window.NotificationEngine) NotificationEngine.updateUIStatus();
   },
 
+  // Switch Navigasi & Logo Home Click
   bindNavigation() {
     const tabs = document.querySelectorAll('.nav-tab-btn');
+    const brandBtn = document.getElementById('brandHomeBtn');
+
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const target = tab.getAttribute('data-tab');
-        document.querySelectorAll('.nav-tab-btn').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-        tab.classList.add('active');
-        const activeView = document.getElementById(`view-${target}`);
-        if (activeView) activeView.classList.add('active');
+        this.switchTab(target);
       });
     });
+
+    if (brandBtn) {
+      brandBtn.addEventListener('click', () => {
+        this.switchTab('dashboard');
+      });
+    }
+  },
+
+  switchTab(target) {
+    document.querySelectorAll('.nav-tab-btn').forEach(t => {
+      if (t.getAttribute('data-tab') === target) t.classList.add('active');
+      else t.classList.remove('active');
+    });
+
+    document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+    const activeView = document.getElementById(`view-${target}`);
+    if (activeView) activeView.classList.add('active');
+  },
+
+  // Header Actions: Mode Gelap / Terang & Quick Mute
+  bindHeaderActions() {
+    const themeBtn = document.getElementById('themeToggleBtn');
+    const themeSelect = document.getElementById('settingThemeSelect');
+    const audioBtn = document.getElementById('headerAudioToggle');
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('makanyuks_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (themeSelect) themeSelect.value = savedTheme;
+
+    // Toggle Theme Click
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('makanyuks_theme', next);
+        if (themeSelect) themeSelect.value = next;
+        if (window.NotificationEngine) NotificationEngine.showToast(`Mode ${next === 'dark' ? 'Gelap' : 'Terang'} Diaktifkan ✨`);
+      });
+    }
+
+    if (themeSelect) {
+      themeSelect.addEventListener('change', (e) => {
+        const next = e.target.value;
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('makanyuks_theme', next);
+      });
+    }
+
+    // Toggle Audio Mute
+    if (audioBtn) {
+      audioBtn.addEventListener('click', () => {
+        const isMuted = localStorage.getItem('makanyuks_sound_enabled') === 'false';
+        localStorage.setItem('makanyuks_sound_enabled', isMuted ? 'true' : 'false');
+        if (window.NotificationEngine) {
+          NotificationEngine.showToast(isMuted ? 'Suara Alarm Aktif 🔊' : 'Suara Alarm Dimatikan 🔇');
+        }
+      });
+    }
   },
 
   bindNotificationButtons() {
@@ -87,10 +147,18 @@ const App = {
 
   startClock() {
     const clockEl = document.getElementById('digitalClock');
-    setInterval(() => {
+    const dateEl = document.getElementById('currentDateStr');
+    
+    const update = () => {
       const now = new Date();
       if (clockEl) clockEl.innerText = now.toLocaleTimeString('id-ID');
-    }, 1000);
+      if (dateEl) {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateEl.innerText = now.toLocaleDateString('id-ID', options);
+      }
+    };
+    update();
+    setInterval(update, 1000);
   },
 
   renderDashboard() {
