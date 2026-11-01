@@ -43,7 +43,6 @@
       -webkit-touch-callout: none;
     }
 
-    /* Pengecualian hanya untuk elemen input teks agar tetap bisa diketik */
     input, textarea {
       -webkit-user-select: text;
       -moz-user-select: text;
@@ -58,7 +57,6 @@
       transition: opacity 0.4s ease;
     }
 
-    /* Animasi Keluar Aplikasi */
     body.app-exiting {
       opacity: 0;
       pointer-events: none;
@@ -89,8 +87,35 @@
     .brand-text h1 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); line-height: 1.2; }
     .brand-text span { font-size: 0.7rem; color: var(--text-muted); display: block; }
     
-    .nav-tabs { display: flex; background: var(--bg-secondary); padding: 4px; border-radius: var(--radius-md); gap: 4px; width: 100%; order: 3; margin-top: 8px; justify-content: space-around; }
-    .nav-tab-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.82rem; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; }
+    /* NAVIGASI DISESUAIKAN AGAR MUAT 4 TAB DI HP */
+    .nav-tabs { 
+      display: flex; 
+      background: var(--bg-secondary); 
+      padding: 4px; 
+      border-radius: var(--radius-md); 
+      gap: 2px; 
+      width: 100%; 
+      order: 3; 
+      margin-top: 8px; 
+      justify-content: space-around; 
+    }
+    .nav-tab-btn { 
+      flex: 1; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 3px; 
+      padding: 8px 2px; 
+      border: none; 
+      background: transparent; 
+      color: var(--text-muted); 
+      font-weight: 700; 
+      font-size: 0.72rem; 
+      border-radius: 12px; 
+      cursor: pointer; 
+      transition: all 0.2s ease; 
+      white-space: nowrap;
+    }
     .nav-tab-btn.active { background: var(--sage-500) !important; color: #ffffff !important; box-shadow: var(--shadow-sm); }
     
     .header-actions { display: flex; gap: 8px; order: 2; align-items: center; }
@@ -106,6 +131,7 @@
       .brand-text h1 { font-size: 1.25rem; }
       .brand-text span { font-size: 0.75rem; }
       .icon-btn { width: 40px; height: 40px; }
+      .nav-tab-btn { font-size: 0.82rem; padding: 8px 12px; gap: 6px; }
     }
     
     .main-wrapper { max-width: 1100px; width: 100%; margin: 0 auto; padding: 16px; flex: 1; }
@@ -427,7 +453,6 @@
 
   <!-- SCRIPT LOGIKA APLIKASI + FIREBASE REALTIME DB -->
   <script>
-    // MENCEGAH SELEKSI TEKS TAHAN LAMA DI MOBILE (MENU SALIN)
     document.addEventListener('contextmenu', (e) => {
       if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
         e.preventDefault();
@@ -751,12 +776,10 @@
       },
 
       bindExtraUIEvents() {
-        // LOGIKA KELUAR APLIKASI TANPA POP-UP CONFIRM (ANIMASI FADE OUT)
         document.getElementById('exitAppBtn')?.addEventListener('click', () => {
           document.body.classList.add('app-exiting');
           setTimeout(() => {
             window.close();
-            // Jika browser menolak window.close(), reset tampilan
             setTimeout(() => {
               document.body.classList.remove('app-exiting');
               ToastEngine.show('Tekan tombol Home di HP Anda untuk keluar 📱');
