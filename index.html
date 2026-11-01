@@ -3,77 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>MealMate – Your Daily Meal Reminder</title>
-  <meta name="description" content="Aplikasi pengingat jadwal makan harian modern dan aesthetic untuk menjaga pola makan teratur dan hidup lebih sehat.">
+  <title>Makanyuks – Remind Your Meal</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  
-  <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Tailwind CSS CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="css/styles.css">
 
   <style>
     :root {
-      --bg-main: #F9F6EE;
-      --bg-card: #FFFFFF;
-      --bg-secondary: #F0EDE5;
-      --text-main: #2C3E35;
-      --text-muted: #6B7C73;
-      --text-subtle: #9AA8A0;
-      --sage-500: #55856F;
-      --sage-600: #436B59;
-      --sage-100: #E8F0EC;
-      --orange-500: #E76F51;
-      --orange-600: #D05A3C;
-      --orange-100: #FDF0ED;
-      --border-color: #E2DDD3;
-      --shadow-sm: 0 4px 12px rgba(44, 62, 53, 0.05);
-      --shadow-md: 0 8px 24px rgba(44, 62, 53, 0.08);
-      --radius-sm: 12px;
-      --radius-md: 18px;
-      --radius-lg: 24px;
+      --bg-main: #F9F6EE; --bg-card: #FFFFFF; --bg-secondary: #F0EDE5;
+      --text-main: #2C3E35; --text-muted: #6B7C73; --text-subtle: #9AA8A0;
+      --sage-500: #55856F; --sage-600: #436B59; --sage-100: #E8F0EC;
+      --orange-500: #E76F51; --orange-600: #D05A3C; --orange-100: #FDF0ED;
+      --border-color: #E2DDD3; --shadow-sm: 0 4px 12px rgba(44, 62, 53, 0.05);
+      --radius-sm: 12px; --radius-md: 18px; --radius-lg: 24px;
     }
-
     [data-theme="dark"] {
-      --bg-main: #141E19;
-      --bg-card: #1D2A24;
-      --bg-secondary: #25352E;
-      --text-main: #EBF3EF;
-      --text-muted: #A3B8AD;
-      --text-subtle: #6D8277;
-      --sage-500: #68A087;
-      --sage-600: #55856F;
-      --sage-100: #263830;
-      --orange-500: #F08065;
-      --orange-100: #3D2620;
-      --border-color: #2E4037;
-      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
-      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
+      --bg-main: #141E19; --bg-card: #1D2A24; --bg-secondary: #25352E;
+      --text-main: #EBF3EF; --text-muted: #A3B8AD; --text-subtle: #6D8277;
+      --sage-500: #68A087; --sage-600: #55856F; --sage-100: #263830;
+      --orange-500: #F08065; --orange-100: #3D2620; --border-color: #2E4037;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
-    
-    /* Header & Mobile Nav */
     .site-header { background: var(--bg-card); border-bottom: 1px solid var(--border-color); padding: 12px 16px; position: sticky; top: 0; z-index: 50; box-shadow: var(--shadow-sm); }
     .header-container { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
     .brand-wrapper { display: flex; align-items: center; gap: 10px; cursor: pointer; }
     .brand-icon img { width: 36px; height: 36px; border-radius: var(--radius-sm); }
     .brand-text h1 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); line-height: 1.2; }
     .brand-text span { font-size: 0.7rem; color: var(--text-muted); display: block; }
-    
     .nav-tabs { display: flex; background: var(--bg-secondary); padding: 4px; border-radius: var(--radius-md); gap: 4px; width: 100%; order: 3; margin-top: 8px; justify-content: space-around; }
     .nav-tab-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.82rem; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; }
     .nav-tab-btn.active { background: var(--bg-card); color: var(--sage-500); box-shadow: var(--shadow-sm); }
-    
     .header-actions { display: flex; gap: 8px; order: 2; }
     .icon-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    
-    /* Desktop Layout Overrides */
     @media (min-width: 640px) {
       .site-header { padding: 16px 24px; }
       .header-container { flex-wrap: nowrap; }
@@ -83,18 +48,12 @@
       .brand-text span { font-size: 0.75rem; }
       .icon-btn { width: 40px; height: 40px; }
     }
-
-    /* Main Container */
     .main-wrapper { max-width: 1100px; width: 100%; margin: 0 auto; padding: 16px; flex: 1; }
     @media (min-width: 640px) { .main-wrapper { padding: 32px 24px; } }
-    
     .tab-view { display: none; }
     .tab-view.active { display: block; }
-    
-    /* Hero Section */
     .hero-card { background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; box-shadow: var(--shadow-sm); }
     @media (min-width: 640px) { .hero-card { flex-direction: row; justify-content: space-between; align-items: center; padding: 32px; margin-bottom: 24px; } }
-    
     .hero-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--sage-100); color: var(--sage-500); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-bottom: 8px; }
     .hero-greeting { font-size: 1.4rem; font-weight: 800; color: var(--text-main); }
     @media (min-width: 640px) { .hero-greeting { font-size: 1.8rem; } }
@@ -104,11 +63,8 @@
     .clock-digital { font-size: 1.8rem; font-weight: 800; color: var(--sage-500); }
     @media (min-width: 640px) { .clock-digital { font-size: 2.2rem; } }
     .clock-date { font-size: 0.8rem; color: var(--text-muted); }
-    
-    /* Metrics Grid */
     .metrics-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 20px; }
     @media (min-width: 640px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px; } }
-    
     .metric-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); }
     .metric-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .metric-title { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
@@ -117,129 +73,97 @@
     .progress-meta { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 700; font-size: 0.85rem; }
     .progress-track { height: 10px; background: var(--bg-secondary); border-radius: 5px; overflow: hidden; }
     .progress-fill { height: 100%; width: 0%; background: var(--sage-500); transition: width 0.4s ease; }
-    
-    /* Banner & Buttons */
     .safety-banner { background: var(--sage-100); border: 1px solid var(--sage-500); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
     @media (min-width: 640px) { .safety-banner { flex-direction: row; justify-content: space-between; align-items: center; padding: 16px 20px; margin-bottom: 32px; } }
-    
     .banner-left { display: flex; align-items: center; gap: 10px; }
     .banner-btn, .btn-secondary, .btn-complete { padding: 8px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-weight: 600; font-size: 0.85rem; color: var(--text-main); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
     @media (min-width: 640px) { .banner-btn, .btn-secondary, .btn-complete { width: auto; } }
     .btn-complete { background: var(--sage-500); color: #fff; border: none; }
-    
     .section-header { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
     @media (min-width: 640px) { .section-header { flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 20px; } }
     .section-title { font-size: 1.15rem; font-weight: 800; }
-    
-    /* Settings List */
     .settings-section { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
     @media (min-width: 640px) { .settings-section { padding: 24px; margin-bottom: 20px; } }
     .settings-section-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
     .settings-section-sub { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px; }
-    
     .setting-row { display: flex; flex-direction: column; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
     @media (min-width: 640px) { .setting-row { flex-direction: row; justify-content: space-between; align-items: center; padding: 14px 0; } }
     .setting-row:last-child { border-bottom: none; }
     .setting-info h5 { font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
     .setting-info p { font-size: 0.78rem; color: var(--text-muted); }
-    
-    /* Switches & Controls */
     .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-secondary); border: 1px solid var(--border-color); transition: .3s; border-radius: 24px; }
     .slider-switch:before { position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 2px; background-color: var(--text-muted); transition: .3s; border-radius: 50%; }
     input:checked + .slider-switch { background-color: var(--sage-500); border-color: var(--sage-500); }
     input:checked + .slider-switch:before { transform: translateX(20px); background-color: #fff; }
-    
     .range-wrap { display: flex; align-items: center; gap: 10px; width: 100%; }
     .range-input { flex: 1; accent-color: var(--sage-500); }
     .range-value { font-size: 0.85rem; font-weight: 700; min-width: 36px; }
-    
     .input-control, .select-control, .textarea-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-main); color: var(--text-main); font-size: 0.88rem; }
-    
-    /* Modals & Footer */
     .modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
     .modal-content { background: var(--bg-card); border-radius: var(--radius-lg); width: 100%; max-width: 480px; padding: 20px; max-height: 90vh; overflow-y: auto; }
     .modal-backdrop.active { display: flex; }
-    
     .site-footer { background: var(--bg-card); border-top: 1px solid var(--border-color); padding: 20px 16px; text-align: center; margin-top: auto; }
     .footer-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 8px; }
     .footer-pill { font-size: 0.68rem; background: var(--bg-secondary); padding: 2px 8px; border-radius: 10px; color: var(--text-subtle); }
+    .rec-active { animation: pulseRec 1.2s infinite; background-color: #E76F51 !important; color: #fff !important; }
+    @keyframes pulseRec { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    
+    .meals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .meal-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+    .meal-card.completed { border-color: var(--sage-500); background: var(--sage-100); }
   </style>
 </head>
 <body>
 
-  <!-- Site Header -->
+  <!-- Header -->
   <header class="site-header">
     <div class="header-container">
       <div class="brand-wrapper" id="brandHomeBtn">
         <div class="brand-icon">
-          <img src="favicon.svg" alt="MealMate Logo">
+          <img src="favicon.svg" alt="Makanyuks Logo">
         </div>
         <div class="brand-text">
-          <h1>MealMate</h1>
-          <span>Your Daily Meal Reminder</span>
+          <h1>Makanyuks</h1>
+          <span>Your Personal Daily Meal Reminder</span>
         </div>
       </div>
 
       <div class="header-actions">
-        <button class="icon-btn" id="headerAudioToggle" title="Matikan/Aktifkan Suara Alarm">
+        <button class="icon-btn" id="headerAudioToggle" title="Mute/Unmute Alarm">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="headerAudioIcon">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
           </svg>
         </button>
-        <button class="icon-btn" id="themeToggleBtn" title="Ganti Tema Terang/Gelap">
+        <button class="icon-btn" id="themeToggleBtn" title="Ganti Tema">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="themeIcon">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
           </svg>
         </button>
       </div>
 
-      <!-- Navigation Tabs -->
-      <nav class="nav-tabs" aria-label="Main Navigation">
-        <button class="nav-tab-btn active" data-tab="dashboard">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          <span>Dashboard</span>
-        </button>
-        <button class="nav-tab-btn" data-tab="history">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          <span>Riwayat</span>
-        </button>
-        <button class="nav-tab-btn" data-tab="settings">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-          <span>Pengaturan</span>
-        </button>
+      <nav class="nav-tabs">
+        <button class="nav-tab-btn active" data-tab="dashboard"><span>Dashboard</span></button>
+        <button class="nav-tab-btn" data-tab="history"><span>Riwayat</span></button>
+        <button class="nav-tab-btn" data-tab="settings"><span>Pengaturan</span></button>
       </nav>
     </div>
   </header>
 
-  <!-- Main Wrapper -->
   <main class="main-wrapper">
 
-    <!-- TAB 1: DASHBOARD -->
+    <!-- DASHBOARD -->
     <section class="tab-view active" id="view-dashboard">
       <div class="hero-card">
         <div class="hero-content">
-          <div class="hero-pill" id="heroPill">
-            <span>🥗</span> Pola Makan Teratur
-          </div>
+          <div class="hero-pill" id="heroPill"><span>🥗</span> Pola Makan Teratur</div>
           <h2 class="hero-greeting" id="heroGreeting">Selamat Pagi!</h2>
           <p class="hero-subtext" id="heroSubtext">Waktunya sarapan dengan menu bergizi untuk menjaga energi sepanjang hari.</p>
         </div>
-
         <div class="hero-clock-box">
-          <div class="clock-digital" id="digitalClock">
-            00<span class="colon">:</span>00<span class="colon">:</span>00
-          </div>
+          <div class="clock-digital" id="digitalClock">00:00:00</div>
           <div class="clock-date" id="currentDateStr">Minggu, 1 November 2026</div>
         </div>
       </div>
@@ -278,104 +202,57 @@
           <span style="font-size: 1.4rem;">🔔</span>
           <div>
             <h4 style="font-size: 0.9rem; font-weight: 700;">Pastikan Alarm & Notifikasi Aktif</h4>
-            <p style="font-size: 0.78rem; color: var(--text-muted);">Biarkan tab tetap terbuka agar alarm berbunyi tepat waktu.</p>
+            <p style="font-size: 0.78rem; color: var(--text-muted);" id="notifStatusExplanation">Biarkan tab tetap terbuka agar alarm berbunyi tepat waktu.</p>
           </div>
         </div>
         <button class="banner-btn" id="bannerEnableNotifBtn">Izinkan Notifikasi</button>
       </div>
 
       <div class="section-header">
-        <h3 class="section-title">
-          <span>🍽️</span> Jadwal Makan Harian
-        </h3>
-        <button class="btn-secondary" id="openAddMealModalBtn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          Tambah Jadwal
-        </button>
+        <h3 class="section-title"><span>🍽️</span> Jadwal Makan Harian</h3>
+        <button class="btn-secondary" id="openAddMealModalBtn">+ Tambah Jadwal</button>
       </div>
 
       <div class="meals-grid" id="mealsGrid"></div>
     </section>
 
-    <!-- TAB 2: RIWAYAT -->
+    <!-- RIWAYAT -->
     <section class="tab-view" id="view-history">
       <div class="section-header">
-        <h3 class="section-title">
-          <span>📊</span> Riwayat Makan
-        </h3>
+        <h3 class="section-title"><span>📊</span> Riwayat Makan</h3>
         <button class="btn-secondary" id="clearHistoryBtn">Bersihkan Riwayat</button>
       </div>
-
       <div style="background: var(--bg-card); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
         <h4 style="font-size: 0.95rem; font-weight: 700;">Catatan Waktu Makan</h4>
         <div class="history-items" id="historyItemsList" style="margin-top: 10px;"></div>
       </div>
     </section>
 
-    <!-- TAB 3: PENGATURAN -->
+    <!-- PENGATURAN -->
     <section class="tab-view" id="view-settings">
       <div class="section-header">
-        <h3 class="section-title">
-          <span>⚙️</span> Pengaturan Aplikasi
-        </h3>
+        <h3 class="section-title"><span>⚙️</span> Pengaturan & Rekam Suara</h3>
       </div>
 
-      <div class="settings-section">
-        <h4 class="settings-section-title">
-          <span>🔊</span> Suara & Alarm
-        </h4>
-        <p class="settings-section-sub">Atur preferensi suara pengingat makan.</p>
+      <div class="settings-section" style="border: 2px solid var(--sage-500);">
+        <h4 class="settings-section-title"><span>🎙️</span> Rekam Suara Anda Sendiri</h4>
+        <p class="settings-section-sub">Rekam suara Anda sendiri sebagai alarm pengingat makan.</p>
 
-        <div class="setting-row">
-          <div class="setting-info">
-            <h5>Aktifkan Suara Alarm</h5>
-            <p>Putar nada lembut & suara pengingat.</p>
+        <div style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 16px; text-align: center;">
+          <div id="recStatusText" style="font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; color: var(--sage-500);">
+            Klik "Mulai Rekam" lalu katakan pesan pengingat Anda!
           </div>
-          <label class="switch">
-            <input type="checkbox" id="settingSoundToggle" checked>
-            <span class="slider-switch"></span>
-          </label>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-info">
-            <h5>Nada Lonceng (Chime)</h5>
-            <p>Mainkan lonceng sebelum pembacaan teks.</p>
+          <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn-complete" id="startRecBtn" style="background: var(--orange-500);">🔴 Mulai Rekam Suara</button>
+            <button class="btn-secondary" id="stopRecBtn" style="display: none;">⏹️ Hentikan Rekaman</button>
+            <button class="btn-secondary" id="playRecBtn" style="display: none;">▶️ Putar Hasil Rekaman</button>
+            <button class="btn-secondary" id="deleteRecBtn" style="display: none; color: var(--orange-500);">🗑️ Hapus Rekaman</button>
           </div>
-          <label class="switch">
-            <input type="checkbox" id="settingChimeToggle" checked>
-            <span class="slider-switch"></span>
-          </label>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-info">
-            <h5>Volume Suara</h5>
-          </div>
-          <div class="range-wrap">
-            <input type="range" class="range-input" id="settingVolumeRange" min="0" max="1" step="0.05" value="0.85">
-            <span class="range-value" id="settingVolumeVal">85%</span>
-          </div>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-info">
-            <h5>Pilihan Suara</h5>
-          </div>
-          <select class="select-control" id="settingVoiceSelect">
-            <option value="">Deteksi Otomatis (Bahasa Indonesia)</option>
-          </select>
-        </div>
-
-        <div class="setting-row">
-          <button class="btn-secondary" id="testVoiceBtn">Tes Suara Sekarang</button>
         </div>
       </div>
 
       <div class="settings-section">
-        <h4 class="settings-section-title">
-          <span>🔔</span> Notifikasi Browser
-        </h4>
+        <h4 class="settings-section-title"><span>🔔</span> Notifikasi Browser</h4>
         <div class="setting-row">
           <button class="btn-secondary" id="settingRequestNotifBtn">Izinkan Notifikasi</button>
           <button class="btn-secondary" id="settingTestNotifBtn">Kirim Notifikasi Tes</button>
@@ -383,23 +260,13 @@
       </div>
 
       <div class="settings-section">
-        <h4 class="settings-section-title">
-          <span>🎨</span> Tampilan & Data
-        </h4>
+        <h4 class="settings-section-title"><span>🎨</span> Tampilan</h4>
         <div class="setting-row">
-          <div class="setting-info">
-            <h5>Mode Tampilan</h5>
-          </div>
+          <div class="setting-info"><h5>Mode Tampilan</h5></div>
           <select class="select-control" id="settingThemeSelect">
             <option value="light">Mode Terang (Soft Cream)</option>
             <option value="dark">Mode Gelap (Sage Night)</option>
           </select>
-        </div>
-
-        <div class="setting-row">
-          <button class="btn-secondary" id="settingResetDataBtn" style="color: var(--orange-500); border-color: var(--orange-500);">
-            Reset Data Ke Default
-          </button>
         </div>
       </div>
     </section>
@@ -408,47 +275,20 @@
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <p style="font-size: 0.8rem;"><strong>MealMate</strong> &copy; 2026.</p>
-      <div class="footer-pills">
-        <span class="footer-pill">SpeechSynthesis API</span>
-        <span class="footer-pill">Web Audio API</span>
-        <span class="footer-pill">LocalStorage</span>
-      </div>
+      <p style="font-size: 0.8rem;"><strong>Makanyuks</strong> &copy; 2026.</p>
     </div>
   </footer>
 
   <!-- MODAL ALARM DIALOG -->
   <div class="modal-backdrop" id="alarmModalBackdrop">
     <div class="modal-content" style="text-align: center;">
-      <div style="font-size: 2.8rem; margin-bottom: 6px;" id="alarmModalIcon">🍽️</div>
-      <h3 style="font-size: 1.25rem; font-weight: 800;" id="alarmModalTitle">Saatnya Makan!</h3>
-      <p style="color: var(--text-muted); font-size: 0.85rem; margin: 10px 0;" id="alarmModalPhrase">Jangan lupa makan tepat waktu ya!</p>
+      <div style="font-size: 3rem; margin-bottom: 6px;" id="alarmModalIcon">🍽️</div>
+      <h3 style="font-size: 1.3rem; font-weight: 800;" id="alarmModalTitle">Saatnya Makan!</h3>
+      <p style="color: var(--text-muted); font-size: 0.88rem; margin: 10px 0;" id="alarmModalPhrase">Jangan lupa makan tepat waktu ya!</p>
       <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;">
         <button class="btn-complete" id="alarmBtnComplete">Sudah Makan</button>
-        <button class="btn-secondary" id="alarmBtnDismiss">Tutup</button>
+        <button class="btn-secondary" id="alarmBtnDismiss">Matikan Alarm</button>
       </div>
-    </div>
-  </div>
-
-  <!-- MODAL EDIT JADWAL -->
-  <div class="modal-backdrop" id="editMealModalBackdrop">
-    <div class="modal-content">
-      <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 14px;">Edit Jadwal Makan</h3>
-      <form id="editMealForm">
-        <input type="hidden" id="editMealId">
-        <div style="margin-bottom: 12px;">
-          <label style="font-size: 0.8rem; font-weight: 700;">Nama Jadwal</label>
-          <input type="text" class="input-control" id="editMealName" required>
-        </div>
-        <div style="margin-bottom: 12px;">
-          <label style="font-size: 0.8rem; font-weight: 700;">Jam</label>
-          <input type="time" class="input-control" id="editMealTime" required>
-        </div>
-        <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px;">
-          <button type="button" class="btn-secondary" id="cancelEditModalBtn">Batal</button>
-          <button type="submit" class="btn-complete">Simpan</button>
-        </div>
-      </form>
     </div>
   </div>
 
