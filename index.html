@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-  <!-- SDK Firebase Realtime Database (Compat Version) -->
+  <!-- SDK Firebase Realtime Database -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -31,8 +31,38 @@
       --sage-500: #68A087; --sage-600: #55856F; --sage-100: #263830;
       --orange-500: #F08065; --orange-100: #3D2620; --border-color: #2E4037;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    /* MENCEGAH TEKS DI-HIGHLIGHT & MEMUNCULKAN MENU SALIN */
+    * {
+      box-sizing: border-box; margin: 0; padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    /* Pengecualian hanya untuk elemen input teks agar tetap bisa diketik */
+    input, textarea {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+      -webkit-touch-callout: default;
+    }
+
+    body {
+      background-color: var(--bg-main); color: var(--text-main);
+      min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden;
+      transition: opacity 0.4s ease;
+    }
+
+    /* Animasi Keluar Aplikasi */
+    body.app-exiting {
+      opacity: 0;
+      pointer-events: none;
+    }
     
     #splashScreen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -64,7 +94,8 @@
     .nav-tab-btn.active { background: var(--sage-500) !important; color: #ffffff !important; box-shadow: var(--shadow-sm); }
     
     .header-actions { display: flex; gap: 8px; order: 2; align-items: center; }
-    .icon-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s, transform 0.15s ease; }
+    .icon-btn:active { transform: scale(0.9); }
     .icon-btn:hover { background: var(--bg-secondary); }
     
     @media (min-width: 640px) {
@@ -396,7 +427,14 @@
 
   <!-- SCRIPT LOGIKA APLIKASI + FIREBASE REALTIME DB -->
   <script>
-    // --- 0. KONFIGURASI FIREBASE KUSTOM MILIK KAMU ---
+    // MENCEGAH SELEKSI TEKS TAHAN LAMA DI MOBILE (MENU SALIN)
+    document.addEventListener('contextmenu', (e) => {
+      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+      }
+    });
+
+    // --- 0. KONFIGURASI FIREBASE ---
     const firebaseConfig = {
       apiKey: "AIzaSyDNIYG-k8VOZH4NxNIm_NSEblmZjiQGjk",
       authDomain: "makanyuks-app.firebaseapp.com",
@@ -408,7 +446,6 @@
       measurementId: "G-ZY3D81H6ZX"
     };
 
-    // Inisialisasi Firebase
     let db = null;
     try {
       firebase.initializeApp(firebaseConfig);
@@ -714,11 +751,17 @@
       },
 
       bindExtraUIEvents() {
+        // LOGIKA KELUAR APLIKASI TANPA POP-UP CONFIRM (ANIMASI FADE OUT)
         document.getElementById('exitAppBtn')?.addEventListener('click', () => {
-          if (confirm('Apakah Anda yakin ingin keluar dari Makanyuks?')) {
+          document.body.classList.add('app-exiting');
+          setTimeout(() => {
             window.close();
-            setTimeout(() => ToastEngine.show('Tekan tombol Home di HP Anda untuk keluar 📱'), 500);
-          }
+            // Jika browser menolak window.close(), reset tampilan
+            setTimeout(() => {
+              document.body.classList.remove('app-exiting');
+              ToastEngine.show('Tekan tombol Home di HP Anda untuk keluar 📱');
+            }, 500);
+          }, 350);
         });
 
         const backToTopBtn = document.getElementById('backToTopBtn');
@@ -862,7 +905,6 @@
         }
       },
 
-      // --- SENDER FIREBASE REALTIME DB ---
       sendLogToFirebase(mealName) {
         const userName = UserEngine.getUserName() || 'Anonim';
         const todayStr = new Date().toISOString().split('T')[0];
@@ -881,7 +923,6 @@
         document.getElementById('refreshAdminBtn')?.addEventListener('click', () => this.loadAdminLogs());
       },
 
-      // --- READER DASHBOARD PEMANTAU ---
       loadAdminLogs() {
         const tableBody = document.getElementById('adminLogsTableBody');
         const todayStr = new Date().toISOString().split('T')[0];
