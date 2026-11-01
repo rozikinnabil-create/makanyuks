@@ -100,13 +100,6 @@
     .setting-info h5 { font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
     .setting-info p { font-size: 0.78rem; color: var(--text-muted); }
     
-    .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-secondary); border: 1px solid var(--border-color); transition: .3s; border-radius: 24px; }
-    .slider-switch:before { position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 2px; background-color: var(--text-muted); transition: .3s; border-radius: 50%; }
-    input:checked + .slider-switch { background-color: var(--sage-500); border-color: var(--sage-500); }
-    input:checked + .slider-switch:before { transform: translateX(20px); background-color: #fff; }
-    
     .input-control, .select-control, .textarea-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-main); color: var(--text-main); font-size: 0.88rem; }
     .modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
     .modal-content { background: var(--bg-card); border-radius: var(--radius-lg); width: 100%; max-width: 480px; padding: 20px; max-height: 90vh; overflow-y: auto; }
@@ -116,9 +109,6 @@
     .meals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .meal-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
     .meal-card.completed { border-color: var(--sage-500); background: var(--sage-100); }
-    
-    .rec-pulse { animation: pulseBg 1s infinite alternate; }
-    @keyframes pulseBg { from { background-color: #E76F51; } to { background-color: #D05A3C; } }
   </style>
 </head>
 <body>
@@ -240,9 +230,8 @@
         <h3 class="section-title"><span>⚙️</span> Pengaturan & Rekam Suara</h3>
       </div>
 
-      <!-- FITUR PEREKAM SUARA SENDIRI -->
       <div class="settings-section" style="border: 2px solid var(--sage-500);">
-        <h4 class="settings-section-title"><span>🎙️</span> Rekam Suara Anda Sendiri (Fitur Utama)</h4>
+        <h4 class="settings-section-title"><span>🎙️</span> Rekam Suara Anda Sendiri</h4>
         <p class="settings-section-sub">Rekam suara pengingat Anda sendiri melalui mikrofon HP/Laptop.</p>
 
         <div style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 16px; text-align: center;">
@@ -471,6 +460,37 @@
           osc.start();
           osc.stop(ctx.currentTime + 1.5);
         } catch (e) {}
+      },
+      // EFEK SUARA SUKSES SAAT KLIK "SUDAH MAKAN"
+      playSuccessSound() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const now = ctx.currentTime;
+          
+          // Nada Pertama (E5 / 659.25Hz)
+          const osc1 = ctx.createOscillator();
+          const gain1 = ctx.createGain();
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(659.25, now);
+          gain1.gain.setValueAtTime(0.2, now);
+          gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+          osc1.connect(gain1);
+          gain1.connect(ctx.destination);
+          osc1.start(now);
+          osc1.stop(now + 0.3);
+
+          // Nada Kedua Tinggi (A5 / 880Hz - Efek Ceria)
+          const osc2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(880, now + 0.15);
+          gain2.gain.setValueAtTime(0.25, now + 0.15);
+          gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+          osc2.connect(gain2);
+          gain2.connect(ctx.destination);
+          osc2.start(now + 0.15);
+          osc2.stop(now + 0.6);
+        } catch (e) {}
       }
     };
 
@@ -639,10 +659,38 @@
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             dateEl.innerText = now.toLocaleDateString('id-ID', options);
           }
+          this.updateGreeting(now.getHours()); // UPDATE SAPAAN SESUAI WAKTU
           this.updateCountdown();
         };
         update();
         setInterval(update, 1000);
+      },
+
+      // DYNAMIC GREETINGS ENGINE (Berdasarkan Jam)
+      updateGreeting(hours) {
+        const greetingEl = document.getElementById('heroGreeting');
+        const subtextEl = document.getElementById('heroSubtext');
+        const pillEl = document.getElementById('heroPill');
+
+        if (!greetingEl || !subtextEl) return;
+
+        if (hours >= 4 && hours < 11) {
+          greetingEl.innerText = 'Selamat Pagi!';
+          subtextEl.innerText = 'Waktunya sarapan bergizi untuk mengisi energi dan menyambut hari dengan penuh semangat.';
+          if (pillEl) pillEl.innerHTML = '<span>🌅</span> Sarapan Pagi';
+        } else if (hours >= 11 && hours < 15) {
+          greetingEl.innerText = 'Selamat Siang!';
+          subtextEl.innerText = 'Jangan lupa istirahat sejenak dan nikmati makan siang seimbang untuk memulihkan tenaga.';
+          if (pillEl) pillEl.innerHTML = '<span>☀️</span> Makan Siang';
+        } else if (hours >= 15 && hours < 19) {
+          greetingEl.innerText = 'Selamat Sore!';
+          subtextEl.innerText = 'Waktunya makan sore atau menikmati camilan sehat untuk menjaga kadar gula darah tetap stabil.';
+          if (pillEl) pillEl.innerHTML = '<span>🌇</span> Makan Sore';
+        } else {
+          greetingEl.innerText = 'Selamat Malam!';
+          subtextEl.innerText = 'Pilih santapan malam yang ringan dan mudah dicerna agar kualitas tidur Anda tetap optimal.';
+          if (pillEl) pillEl.innerHTML = '<span>🌙</span> Makan Malam';
+        }
       },
 
       updateCountdown() {
@@ -657,7 +705,7 @@
             const [h, m] = meal.time.split(':').map(Number);
             let mealMins = h * 60 + m;
             let diff = mealMins - currentMins;
-            if (diff < 0) diff += 24 * 60; // Besok hari
+            if (diff < 0) diff += 24 * 60;
 
             if (diff < minDiff) {
               minDiff = diff;
@@ -718,10 +766,11 @@
           StorageEngine.saveMeals(this.meals);
           if (meal.completed) {
             StorageEngine.addHistory(meal.name);
+            AudioEngine.playSuccessSound(); // EFEK NADA CHIME SUKSES
           }
           this.renderDashboard();
           this.renderHistory();
-          ToastEngine.show(meal.completed ? `Selamat! ${meal.name} tercatat selesai ✨` : `Jadwal ${meal.name} dibatalkan.`);
+          ToastEngine.show(meal.completed ? `Mantap! ${meal.name} tercatat selesai 🎉` : `Jadwal ${meal.name} dibatalkan.`);
         }
       },
 
