@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Makanyuks – Remind Your Meal</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#55856F">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#55856F"> 
 
   <style>
     :root {
@@ -30,6 +30,25 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
     
+    /* Splash Screen Styling */
+    #splashScreen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: var(--bg-main);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 99999;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    .splash-content { text-align: center; animation: zoomInPulse 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .splash-logo { width: 90px; height: 90px; margin: 0 auto 12px auto; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    .splash-title { font-size: 1.8rem; font-weight: 800; color: var(--sage-500); line-height: 1.2; }
+    .splash-sub { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+    .splash-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    @keyframes zoomInPulse {
+      0% { transform: scale(0.3); opacity: 0; }
+      60% { transform: scale(1.08); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
     .site-header { background: var(--bg-card); border-bottom: 1px solid var(--border-color); padding: 12px 16px; position: sticky; top: 0; z-index: 50; box-shadow: var(--shadow-sm); }
     .header-container { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
     .brand-wrapper { display: flex; align-items: center; gap: 10px; cursor: pointer; }
@@ -115,6 +134,15 @@
 </head>
 <body>
 
+  <!-- SPLASH SCREEN ANIMATED -->
+  <div id="splashScreen">
+    <div class="splash-content">
+      <img src="favicon.svg" alt="Makanyuks Logo" class="splash-logo">
+      <h1 class="splash-title">Makanyuks</h1>
+      <p class="splash-sub">Remind Your Meal</p>
+    </div>
+  </div>
+
   <!-- Header -->
   <header class="site-header">
     <div class="header-container">
@@ -149,6 +177,20 @@
       </nav>
     </div>
   </header>
+
+  <!-- BANNER INSTALL PWA OTOMATIS -->
+  <div id="pwaInstallBanner" style="display: none; background: var(--sage-500); color: #ffffff; padding: 12px 16px; max-width: 1100px; margin: 12px auto 0 auto; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 1.5rem;">📱</span>
+      <div>
+        <h4 style="font-size: 0.88rem; font-weight: 800; line-height: 1.2;">Pasang Aplikasi Makanyuks</h4>
+        <p style="font-size: 0.75rem; opacity: 0.9;">Instal di Layar Utama HP untuk akses cepat & notifikasi lancar!</p>
+      </div>
+    </div>
+    <button id="pwaInstallBtn" style="background: #ffffff; color: var(--sage-500); border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; width: 100%; sm:width: auto;">
+      ⚡ Instal Sekarang
+    </button>
+  </div>
 
   <main class="main-wrapper">
 
@@ -463,13 +505,11 @@
           osc.stop(ctx.currentTime + 1.5);
         } catch (e) {}
       },
-      // EFEK SUARA SUKSES SAAT KLIK "SUDAH MAKAN"
       playSuccessSound() {
         try {
           const ctx = new (window.AudioContext || window.webkitAudioContext)();
           const now = ctx.currentTime;
           
-          // Nada Pertama (E5 / 659.25Hz)
           const osc1 = ctx.createOscillator();
           const gain1 = ctx.createGain();
           osc1.type = 'sine';
@@ -481,7 +521,6 @@
           osc1.start(now);
           osc1.stop(now + 0.3);
 
-          // Nada Kedua Tinggi (A5 / 880Hz - Efek Ceria)
           const osc2 = ctx.createOscillator();
           const gain2 = ctx.createGain();
           osc2.type = 'sine';
@@ -549,6 +588,12 @@
         this.renderDashboard();
         this.renderHistory();
         AudioEngine.init();
+
+        // SPLASH SCREEN HIDE TIMEOUT (1.8s)
+        setTimeout(() => {
+          const splash = document.getElementById('splashScreen');
+          if (splash) splash.classList.add('splash-hidden');
+        }, 1800);
       },
 
       bindNavigation() {
@@ -661,14 +706,13 @@
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             dateEl.innerText = now.toLocaleDateString('id-ID', options);
           }
-          this.updateGreeting(now.getHours()); // UPDATE SAPAAN SESUAI WAKTU
+          this.updateGreeting(now.getHours());
           this.updateCountdown();
         };
         update();
         setInterval(update, 1000);
       },
 
-      // DYNAMIC GREETINGS ENGINE (Berdasarkan Jam)
       updateGreeting(hours) {
         const greetingEl = document.getElementById('heroGreeting');
         const subtextEl = document.getElementById('heroSubtext');
@@ -768,7 +812,7 @@
           StorageEngine.saveMeals(this.meals);
           if (meal.completed) {
             StorageEngine.addHistory(meal.name);
-            AudioEngine.playSuccessSound(); // EFEK NADA CHIME SUKSES
+            AudioEngine.playSuccessSound();
           }
           this.renderDashboard();
           this.renderHistory();
@@ -799,9 +843,40 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => App.init());
+
+    // --- PWA SERVICE WORKER REGISTER ---
     if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(err => console.error('SW Error:', err));
-}
+      navigator.serviceWorker.register('sw.js').catch(err => console.error('SW Error:', err));
+    }
+
+    // --- PWA INSTALL PROMPT ENGINE ---
+    let deferredPrompt;
+    const pwaBanner = document.getElementById('pwaInstallBanner');
+    const pwaBtn = document.getElementById('pwaInstallBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (pwaBanner) pwaBanner.style.display = 'flex';
+    });
+
+    if (pwaBtn) {
+      pwaBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          ToastEngine.show('Terima kasih telah menginstal Makanyuks! 🎉');
+        }
+        deferredPrompt = null;
+        if (pwaBanner) pwaBanner.style.display = 'none';
+      });
+    }
+
+    window.addEventListener('appinstalled', () => {
+      if (pwaBanner) pwaBanner.style.display = 'none';
+      deferredPrompt = null;
+    });
   </script>
 </body>
 </html>
