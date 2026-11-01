@@ -12,6 +12,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+  <!-- SDK Firebase Realtime Database (Compat Version) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <style>
     :root {
       --bg-main: #F9F6EE; --bg-card: #FFFFFF; --bg-secondary: #F0EDE5;
@@ -30,7 +34,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
     
-    /* Splash Screen Styling */
     #splashScreen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-color: var(--bg-main);
@@ -131,6 +134,11 @@
     .meals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .meal-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
     .meal-card.completed { border-color: var(--sage-500); background: var(--sage-100); }
+
+    /* Tabel Admin Pemantau */
+    .admin-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.85rem; }
+    .admin-table th, .admin-table td { padding: 10px 12px; border: 1px solid var(--border-color); text-align: left; }
+    .admin-table th { background: var(--bg-secondary); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -169,7 +177,6 @@
             <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>
           </svg>
         </button>
-        <!-- TOMBOL KELUAR APLIKASI -->
         <button class="icon-btn" id="exitAppBtn" title="Keluar Aplikasi" style="color: var(--orange-500);">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -182,6 +189,7 @@
       <nav class="nav-tabs">
         <button class="nav-tab-btn active" data-tab="dashboard">🏠 <span>Dashboard</span></button>
         <button class="nav-tab-btn" data-tab="history">📊 <span>Riwayat</span></button>
+        <button class="nav-tab-btn" data-tab="admin">🛡️ <span>Pemantau</span></button>
         <button class="nav-tab-btn" data-tab="settings">⚙️ <span>Pengaturan</span></button>
       </nav>
     </div>
@@ -258,8 +266,8 @@
       </div>
 
       <div class="section-header">
-        <h3 class="section-title"><span>🍽️</span> Jadwal Makan Harian</h3>
-        <button class="btn-secondary" id="openAddMealModalBtn">+ Tambah Jadwal</button>
+        <h3 class="section-title"><span>🍽️</span> Jadwal Makan Harian (<span id="userDisplayNameDisplay">Pengguna</span>)</h3>
+        <button class="btn-secondary" id="changeUserNameBtn" style="font-size: 0.75rem; width: auto;">Ganti Nama</button>
       </div>
 
       <div class="meals-grid" id="mealsGrid"></div>
@@ -277,7 +285,36 @@
       </div>
     </section>
 
-    <!-- TAB 3: PENGATURAN -->
+    <!-- TAB 3: PEMANTAU / DASHBOARD ADMIN (ANTI-BOHONG) -->
+    <section class="tab-view" id="view-admin">
+      <div class="section-header">
+        <h3 class="section-title"><span>🛡️</span> Dashboard Pemantau Anti-Bohong</h3>
+        <button class="btn-secondary" id="refreshAdminBtn" style="width: auto;">🔄 Refresh Data</button>
+      </div>
+      <div style="background: var(--bg-card); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); overflow-x: auto;">
+        <h4 style="font-size: 0.95rem; font-weight: 700;">Status Makan Real-time Hari Ini (<span id="adminTodayDateStr">---</span>)</h4>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
+          Waktu di bawah dicatat langsung oleh <strong>Server Firebase</strong> saat tombol diklik.
+        </p>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Nama Pengguna</th>
+              <th>Jadwal Makan</th>
+              <th>Status</th>
+              <th>Waktu Server (Jam Klik)</th>
+            </tr>
+          </thead>
+          <tbody id="adminLogsTableBody">
+            <tr>
+              <td colspan="4" style="text-align: center; color: var(--text-muted);">Memuat data server...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 4: PENGATURAN -->
     <section class="tab-view" id="view-settings">
       <div class="section-header">
         <h3 class="section-title"><span>⚙️</span> Pengaturan & Rekam Suara</h3>
@@ -341,48 +378,55 @@
     </div>
   </footer>
 
-  <!-- TOMBOL SCROLL KE ATAS (BACK TO TOP) -->
+  <!-- TOMBOL SCROLL KE ATAS -->
   <button id="backToTopBtn" title="Kembali ke Atas" style="position: fixed; bottom: 24px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: var(--sage-500); color: #ffffff; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 90;">
     ⬆️
   </button>
 
-  <!-- MODAL ALARM DIALOG -->
-  <div class="modal-backdrop" id="alarmModalBackdrop">
+  <!-- MODAL INPUT NAMA PENGGUNA -->
+  <div class="modal-backdrop" id="userNameModalBackdrop">
     <div class="modal-content" style="text-align: center;">
-      <div style="font-size: 3rem; margin-bottom: 6px;" id="alarmModalIcon">🍽️</div>
-      <h3 style="font-size: 1.3rem; font-weight: 800;" id="alarmModalTitle">Saatnya Makan!</h3>
-      <p style="color: var(--text-muted); font-size: 0.88rem; margin: 10px 0;" id="alarmModalPhrase">Jangan lupa makan tepat waktu ya!</p>
-      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;">
-        <button class="btn-complete" id="alarmBtnComplete">Sudah Makan</button>
-        <button class="btn-secondary" id="alarmBtnDismiss">Matikan Alarm</button>
-      </div>
+      <div style="font-size: 2.5rem; margin-bottom: 8px;">👤</div>
+      <h3 style="font-size: 1.2rem; font-weight: 800;">Masukkan Nama Anda</h3>
+      <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 14px;">Nama ini akan dicatat ke sistem pemantau saat Anda menekan tombol "Sudah Makan".</p>
+      <input type="text" class="input-control" id="userNameInput" placeholder="Contoh: Budi / Ani" style="margin-bottom: 12px; text-align: center;" required>
+      <button class="btn-complete" id="saveUserNameBtn">Simpan Identitas</button>
     </div>
   </div>
 
-  <!-- MODAL TAMBAH JADWAL -->
-  <div class="modal-backdrop" id="addMealModalBackdrop">
-    <div class="modal-content">
-      <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 14px;">Tambah Jadwal Baru</h3>
-      <form id="addMealForm">
-        <div style="margin-bottom: 12px;">
-          <label style="font-size: 0.8rem; font-weight: 700;">Nama Jadwal</label>
-          <input type="text" class="input-control" id="addMealName" placeholder="Contoh: Camilan Sore" required>
-        </div>
-        <div style="margin-bottom: 12px;">
-          <label style="font-size: 0.8rem; font-weight: 700;">Jam</label>
-          <input type="time" class="input-control" id="addMealTime" value="16:00" required>
-        </div>
-        <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px;">
-          <button type="button" class="btn-secondary" id="cancelAddModalBtn">Batal</button>
-          <button type="submit" class="btn-complete">Tambah</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ================= LOGIKA UTAMA APLIKASI (ALL-IN-ONE SCRIPT) ================= -->
+  <!-- SCRIPT LOGIKA APLIKASI + FIREBASE REALTIME DB -->
   <script>
-    // --- 1. LOCAL STORAGE & HISTORY ENGINE ---
+    // --- 0. KONFIGURASI FIREBASE KUSTOM MILIK KAMU ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyDNIYG-k8VOZH4NxNIm_NSEblmZjiQGjk",
+      authDomain: "makanyuks-app.firebaseapp.com",
+      projectId: "makanyuks-app",
+      databaseURL: "https://makanyuks-app-default-rtdb.firebaseio.com",
+      storageBucket: "makanyuks-app.firebasestorage.app",
+      messagingSenderId: "170239201143",
+      appId: "1:170239201143:web:447a508c46c9aa00c39b72",
+      measurementId: "G-ZY3D81H6ZX"
+    };
+
+    // Inisialisasi Firebase
+    let db = null;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+    } catch (e) {
+      console.warn("Firebase Error:", e);
+    }
+
+    // --- 1. LOCAL STORAGE & USER ENGINE ---
+    const UserEngine = {
+      getUserName() {
+        return localStorage.getItem('makanyuks_username') || '';
+      },
+      setUserName(name) {
+        localStorage.setItem('makanyuks_username', name);
+      }
+    };
+
     const StorageEngine = {
       getMeals() {
         const saved = localStorage.getItem('makanyuks_meals');
@@ -413,7 +457,7 @@
       }
     };
 
-    // --- 2. AUDIO & VOICE RECORDER ENGINE ---
+    // --- 2. AUDIO ENGINE ---
     const AudioEngine = {
       mediaRecorder: null,
       audioChunks: [],
@@ -498,11 +542,8 @@
         }
       },
       playAlarm() {
-        if (this.customAudioUrl) {
-          this.playRecordedVoice();
-        } else {
-          this.playChime();
-        }
+        if (this.customAudioUrl) this.playRecordedVoice();
+        else this.playChime();
       },
       playChime() {
         try {
@@ -523,17 +564,14 @@
         try {
           const ctx = new (window.AudioContext || window.webkitAudioContext)();
           const now = ctx.currentTime;
-          
           const osc1 = ctx.createOscillator();
           const gain1 = ctx.createGain();
           osc1.type = 'sine';
           osc1.frequency.setValueAtTime(659.25, now);
           gain1.gain.setValueAtTime(0.2, now);
           gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-          osc1.connect(gain1);
-          gain1.connect(ctx.destination);
-          osc1.start(now);
-          osc1.stop(now + 0.3);
+          osc1.connect(gain1); gain1.connect(ctx.destination);
+          osc1.start(now); osc1.stop(now + 0.3);
 
           const osc2 = ctx.createOscillator();
           const gain2 = ctx.createGain();
@@ -541,10 +579,8 @@
           osc2.frequency.setValueAtTime(880, now + 0.15);
           gain2.gain.setValueAtTime(0.25, now + 0.15);
           gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-          osc2.connect(gain2);
-          gain2.connect(ctx.destination);
-          osc2.start(now + 0.15);
-          osc2.stop(now + 0.6);
+          osc2.connect(gain2); gain2.connect(ctx.destination);
+          osc2.start(now + 0.15); osc2.stop(now + 0.6);
         } catch (e) {}
       }
     };
@@ -577,8 +613,6 @@
             if (permission === 'granted') ToastEngine.show('Izin notifikasi disetujui! 🔔');
             else ToastEngine.show('Izin notifikasi ditolak.');
           });
-        } else {
-          ToastEngine.show('Browser tidak mendukung Web Notification API.');
         }
       },
       testNotification() {
@@ -587,44 +621,63 @@
       }
     };
 
-    // --- 4. APP DASHBOARD & CONTROLLER ---
+    // --- 4. APP CONTROLLER & FIREBASE SYNC ---
     const App = {
       meals: [],
 
       init() {
         this.meals = StorageEngine.getMeals();
+        this.checkUserIdentity();
         this.bindNavigation();
         this.bindHeaderActions();
         this.bindNotificationButtons();
         this.bindHistoryEvents();
-        this.bindModalEvents();
         this.bindExtraUIEvents();
         this.startClock();
         this.renderDashboard();
         this.renderHistory();
+        this.initAdminDashboard();
         AudioEngine.init();
 
-        // SPLASH SCREEN HIDE TIMEOUT (1.8s)
         setTimeout(() => {
           const splash = document.getElementById('splashScreen');
           if (splash) splash.classList.add('splash-hidden');
         }, 1800);
       },
 
+      checkUserIdentity() {
+        const userName = UserEngine.getUserName();
+        const displayEl = document.getElementById('userDisplayNameDisplay');
+        if (displayEl) displayEl.innerText = userName || 'Pengguna';
+
+        if (!userName) {
+          document.getElementById('userNameModalBackdrop')?.classList.add('active');
+        }
+
+        document.getElementById('saveUserNameBtn')?.addEventListener('click', () => {
+          const input = document.getElementById('userNameInput').value.trim();
+          if (input) {
+            UserEngine.setUserName(input);
+            if (displayEl) displayEl.innerText = input;
+            document.getElementById('userNameModalBackdrop')?.classList.remove('active');
+            ToastEngine.show(`Selamat datang, ${input}! 🎉`);
+          }
+        });
+
+        document.getElementById('changeUserNameBtn')?.addEventListener('click', () => {
+          document.getElementById('userNameModalBackdrop')?.classList.add('active');
+        });
+      },
+
       bindNavigation() {
         const tabs = document.querySelectorAll('.nav-tab-btn');
-        const brandBtn = document.getElementById('brandHomeBtn');
-
         tabs.forEach(tab => {
           tab.addEventListener('click', () => {
             const target = tab.getAttribute('data-tab');
             this.switchTab(target);
           });
         });
-
-        if (brandBtn) {
-          brandBtn.addEventListener('click', () => this.switchTab('dashboard'));
-        }
+        document.getElementById('brandHomeBtn')?.addEventListener('click', () => this.switchTab('dashboard'));
       },
 
       switchTab(target) {
@@ -635,13 +688,12 @@
         document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
         const activeView = document.getElementById(`view-${target}`);
         if (activeView) activeView.classList.add('active');
+        if (target === 'admin') this.loadAdminLogs();
       },
 
       bindHeaderActions() {
         const themeBtn = document.getElementById('themeToggleBtn');
         const themeSelect = document.getElementById('settingThemeSelect');
-        const audioBtn = document.getElementById('headerAudioToggle');
-
         const savedTheme = localStorage.getItem('makanyuks_theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         if (themeSelect) themeSelect.value = savedTheme;
@@ -653,52 +705,31 @@
             document.documentElement.setAttribute('data-theme', next);
             localStorage.setItem('makanyuks_theme', next);
             if (themeSelect) themeSelect.value = next;
-            ToastEngine.show(`Mode ${next === 'dark' ? 'Gelap' : 'Terang'} Diaktifkan ✨`);
           });
         }
-
-        if (themeSelect) {
-          themeSelect.addEventListener('change', (e) => {
-            const next = e.target.value;
-            document.documentElement.setAttribute('data-theme', next);
-            localStorage.setItem('makanyuks_theme', next);
-          });
-        }
-
-        if (audioBtn) {
-          audioBtn.addEventListener('click', () => {
-            AudioEngine.playAlarm();
-            ToastEngine.show('Tes Suara Alarm 🔊');
-          });
-        }
+        document.getElementById('headerAudioToggle')?.addEventListener('click', () => {
+          AudioEngine.playAlarm();
+          ToastEngine.show('Tes Suara Alarm 🔊');
+        });
       },
 
       bindExtraUIEvents() {
-        // --- LOGIKA TOMBOL KELUAR APLIKASI ---
         document.getElementById('exitAppBtn')?.addEventListener('click', () => {
           if (confirm('Apakah Anda yakin ingin keluar dari Makanyuks?')) {
             window.close();
-            setTimeout(() => {
-              ToastEngine.show('Tekan tombol Home di HP Anda untuk keluar 📱');
-            }, 500);
+            setTimeout(() => ToastEngine.show('Tekan tombol Home di HP Anda untuk keluar 📱'), 500);
           }
         });
 
-        // --- LOGIKA TOMBOL BACK TO TOP ---
         const backToTopBtn = document.getElementById('backToTopBtn');
         window.addEventListener('scroll', () => {
           if (window.scrollY > 200) {
-            backToTopBtn.style.opacity = '1';
-            backToTopBtn.style.visibility = 'visible';
+            backToTopBtn.style.opacity = '1'; backToTopBtn.style.visibility = 'visible';
           } else {
-            backToTopBtn.style.opacity = '0';
-            backToTopBtn.style.visibility = 'hidden';
+            backToTopBtn.style.opacity = '0'; backToTopBtn.style.visibility = 'hidden';
           }
         });
-
-        backToTopBtn?.addEventListener('click', () => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+        backToTopBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
       },
 
       bindNotificationButtons() {
@@ -711,31 +742,8 @@
         document.getElementById('clearHistoryBtn')?.addEventListener('click', () => {
           StorageEngine.clearHistory();
           this.renderHistory();
-          ToastEngine.show('Riwayat catatan makan berhasil dibersihkan! ✨');
+          ToastEngine.show('Riwayat berhasil dibersihkan! ✨');
         });
-      },
-
-      bindModalEvents() {
-        const openAddBtn = document.getElementById('openAddMealModalBtn');
-        const closeAddBtn = document.getElementById('cancelAddModalBtn');
-        const addBackdrop = document.getElementById('addMealModalBackdrop');
-        const addForm = document.getElementById('addMealForm');
-
-        if (openAddBtn && addBackdrop) openAddBtn.addEventListener('click', () => addBackdrop.classList.add('active'));
-        if (closeAddBtn && addBackdrop) closeAddBtn.addEventListener('click', () => addBackdrop.classList.remove('active'));
-
-        if (addForm) {
-          addForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('addMealName').value;
-            const time = document.getElementById('addMealTime').value;
-            this.meals.push({ id: Date.now(), name, time, icon: '🥗', desc: 'Jadwal makan kustom', completed: false });
-            StorageEngine.saveMeals(this.meals);
-            if (addBackdrop) addBackdrop.classList.remove('active');
-            this.renderDashboard();
-            ToastEngine.show('Jadwal baru berhasil ditambahkan! 🥗');
-          });
-        }
       },
 
       startClock() {
@@ -746,52 +754,36 @@
           const now = new Date();
           if (clockEl) clockEl.innerText = now.toLocaleTimeString('id-ID');
           if (dateEl) {
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            dateEl.innerText = now.toLocaleDateString('id-ID', options);
+            dateEl.innerText = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
           }
           this.updateGreeting(now.getHours());
           this.updateCountdown();
-          this.checkScheduleAlarms(now);
         };
         update();
         setInterval(update, 1000);
-      },
-
-      checkScheduleAlarms(now) {
-        const currentHours = String(now.getHours()).padStart(2, '0');
-        const currentMinutes = String(now.getMinutes()).padStart(2, '0');
-        const currentTimeStr = `${currentHours}:${currentMinutes}`;
-
-        this.meals.forEach(meal => {
-          if (meal.time === currentTimeStr && !meal.completed && !meal.notified) {
-            NotificationEngine.testNotification();
-            meal.notified = true;
-          }
-        });
       },
 
       updateGreeting(hours) {
         const greetingEl = document.getElementById('heroGreeting');
         const subtextEl = document.getElementById('heroSubtext');
         const pillEl = document.getElementById('heroPill');
-
         if (!greetingEl || !subtextEl) return;
 
         if (hours >= 4 && hours < 11) {
           greetingEl.innerText = 'Selamat Pagi!';
-          subtextEl.innerText = 'Waktunya sarapan bergizi untuk mengisi energi dan menyambut hari dengan penuh semangat.';
+          subtextEl.innerText = 'Waktunya sarapan bergizi untuk mengisi energi dan menyambut hari.';
           if (pillEl) pillEl.innerHTML = '<span>🌅</span> Sarapan Pagi';
         } else if (hours >= 11 && hours < 15) {
           greetingEl.innerText = 'Selamat Siang!';
-          subtextEl.innerText = 'Jangan lupa istirahat sejenak dan nikmati makan siang seimbang untuk memulihkan tenaga.';
+          subtextEl.innerText = 'Jangan lupa istirahat sejenak dan nikmati makan siang seimbang.';
           if (pillEl) pillEl.innerHTML = '<span>☀️</span> Makan Siang';
         } else if (hours >= 15 && hours < 19) {
           greetingEl.innerText = 'Selamat Sore!';
-          subtextEl.innerText = 'Waktunya makan sore atau menikmati camilan sehat untuk menjaga kadar gula darah tetap stabil.';
+          subtextEl.innerText = 'Waktunya makan sore atau menikmati camilan sehat.';
           if (pillEl) pillEl.innerHTML = '<span>🌇</span> Makan Sore';
         } else {
           greetingEl.innerText = 'Selamat Malam!';
-          subtextEl.innerText = 'Pilih santapan malam yang ringan dan mudah dicerna agar kualitas tidur Anda tetap optimal.';
+          subtextEl.innerText = 'Pilih santapan malam yang ringan agar kualitas tidur optimal.';
           if (pillEl) pillEl.innerHTML = '<span>🌙</span> Makan Malam';
         }
       },
@@ -799,21 +791,15 @@
       updateCountdown() {
         const now = new Date();
         const currentMins = now.getHours() * 60 + now.getMinutes();
-
         let nextMeal = null;
         let minDiff = Infinity;
 
         this.meals.forEach(meal => {
           if (!meal.completed) {
             const [h, m] = meal.time.split(':').map(Number);
-            let mealMins = h * 60 + m;
-            let diff = mealMins - currentMins;
+            let diff = (h * 60 + m) - currentMins;
             if (diff < 0) diff += 24 * 60;
-
-            if (diff < minDiff) {
-              minDiff = diff;
-              nextMeal = meal;
-            }
+            if (diff < minDiff) { minDiff = diff; nextMeal = meal; }
           }
         });
 
@@ -825,9 +811,7 @@
           const hours = Math.floor(minDiff / 60);
           const mins = minDiff % 60;
           const secs = 59 - now.getSeconds();
-          if (countEl) {
-            countEl.innerText = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-          }
+          if (countEl) countEl.innerText = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         } else {
           if (badgeEl) badgeEl.innerText = 'Semua Selesai 🎉';
           if (countEl) countEl.innerText = '00:00:00';
@@ -870,11 +854,69 @@
           if (meal.completed) {
             StorageEngine.addHistory(meal.name);
             AudioEngine.playSuccessSound();
+            this.sendLogToFirebase(meal.name);
           }
           this.renderDashboard();
           this.renderHistory();
           ToastEngine.show(meal.completed ? `Mantap! ${meal.name} tercatat selesai 🎉` : `Jadwal ${meal.name} dibatalkan.`);
         }
+      },
+
+      // --- SENDER FIREBASE REALTIME DB ---
+      sendLogToFirebase(mealName) {
+        const userName = UserEngine.getUserName() || 'Anonim';
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        if (db) {
+          db.ref(`meal_logs/${todayStr}`).push({
+            userName: userName,
+            mealName: mealName,
+            status: "Sudah Makan",
+            serverTimestamp: firebase.database.ServerValue.TIMESTAMP
+          });
+        }
+      },
+
+      initAdminDashboard() {
+        document.getElementById('refreshAdminBtn')?.addEventListener('click', () => this.loadAdminLogs());
+      },
+
+      // --- READER DASHBOARD PEMANTAU ---
+      loadAdminLogs() {
+        const tableBody = document.getElementById('adminLogsTableBody');
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('adminTodayDateStr').innerText = todayStr;
+
+        if (!db) {
+          tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--orange-500);">Gagal menghubungkan Firebase Database.</td></tr>`;
+          return;
+        }
+
+        db.ref(`meal_logs/${todayStr}`).off();
+        db.ref(`meal_logs/${todayStr}`).on('value', snapshot => {
+          const logs = snapshot.val();
+          if (!logs) {
+            tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Belum ada pengguna yang menekan tombol makan hari ini (${todayStr}).</td></tr>`;
+            return;
+          }
+
+          let htmlRows = '';
+          Object.values(logs).reverse().forEach(log => {
+            const timeFormatted = log.serverTimestamp 
+              ? new Date(log.serverTimestamp).toLocaleTimeString('id-ID')
+              : 'Baru saja';
+
+            htmlRows += `
+              <tr>
+                <td><strong>${log.userName || 'Anonim'}</strong></td>
+                <td>${log.mealName || 'Jadwal Makan'}</td>
+                <td><span style="background:var(--sage-100); color:var(--sage-500); padding:2px 8px; border-radius:10px; font-weight:700;">✅ Sudah Makan</span></td>
+                <td><strong>${timeFormatted}</strong></td>
+              </tr>
+            `;
+          });
+          tableBody.innerHTML = htmlRows;
+        });
       },
 
       renderHistory() {
@@ -901,39 +943,9 @@
 
     document.addEventListener('DOMContentLoaded', () => App.init());
 
-    // --- PWA SERVICE WORKER REGISTER ---
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(err => console.error('SW Error:', err));
     }
-
-    // --- PWA INSTALL PROMPT ENGINE ---
-    let deferredPrompt;
-    const pwaBanner = document.getElementById('pwaInstallBanner');
-    const pwaBtn = document.getElementById('pwaInstallBtn');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      if (pwaBanner) pwaBanner.style.display = 'flex';
-    });
-
-    if (pwaBtn) {
-      pwaBtn.addEventListener('click', async () => {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          ToastEngine.show('Terima kasih telah menginstal Makanyuks! 🎉');
-        }
-        deferredPrompt = null;
-        if (pwaBanner) pwaBanner.style.display = 'none';
-      });
-    }
-
-    window.addEventListener('appinstalled', () => {
-      if (pwaBanner) pwaBanner.style.display = 'none';
-      deferredPrompt = null;
-    });
   </script>
 </body>
 </html>
