@@ -1,0 +1,16 @@
+{
+  "name": "Makanyuks",
+  "short_name": "Makanyuks",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F9F6EE",
+  "theme_color": "#55856F",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
