@@ -1,90 +1,133 @@
-/**
- * MealMate - Browser Notification Service
- * Manages the Web Notification API, permissions, and desktop alerts.
- */
+/* ==========================================================================
+   MEALMATE - NOTIFICATION SYSTEM ENGINE
+   ========================================================================== */
 
-class NotificationService {
-  constructor() {
-    this.isSupported = 'Notification' in window;
-  }
+const NotificationEngine = {
+  // Cek apakah browser mendukung Web Notification API
+  isSupported() {
+    return 'Notification' in window;
+  },
 
-  getPermissionState() {
-    if (!this.isSupported) return 'unsupported';
-    return Notification.permission; // 'default', 'granted', 'denied'
-  }
+  // Dapatkan status izin saat ini
+  getPermissionStatus() {
+    if (!this.isSupported()) return 'unsupported';
+    return Notification.permission;
+  },
 
+  // Minta izin notifikasi dari pengguna
   async requestPermission() {
-    if (!this.isSupported) {
-      return { success: false, reason: 'unsupported' };
+    if (!this.isSupported()) {
+      alert('Browser Anda tidak mendukung Web Notification API.');
+      return false;
     }
 
     try {
       const permission = await Notification.requestPermission();
-      return { success: permission === 'granted', permission };
+      this.updateUIStatus();
+      
+      if (permission === 'granted') {
+        this.showToast('Izin notifikasi berhasil diberikan! 🔔');
+        return true;
+      } else if (permission === 'denied') {
+        alert('Izin notifikasi ditolak. Harap izinkan notifikasi di Pengaturan Browser HP Anda.');
+        return false;
+      }
     } catch (err) {
       console.error('Error requesting notification permission:', err);
-      return { success: false, reason: err.message };
     }
-  }
+    return false;
+  },
 
-  showMealNotification(schedule) {
-    if (!this.isSupported || Notification.permission !== 'granted') {
-      return null;
-    }
+  // Kirim notifikasi desktop / HP
+  sendNotification(title, options = {}) {
+    // 1. Jika izin diberikan, tampilkan notifikasi sistem OS
+    if (this.isSupported() && Notification.permission === 'granted') {
+      try {
+        const notifOptions = {
+          icon: 'favicon.svg',
+          badge: 'favicon.svg',
+          vibrate: [200, 100, 200],
+          tag: 'mealmate-notification',
+          renotify: true,
+          ...options
+        };
 
-    try {
-      const title = `MealMate: Waktunya ${schedule.name}! ${schedule.icon || '🍽️'}`;
-      const options = {
-        body: `${schedule.description || 'Saatnya makan teratur untuk menjaga kesehatan tubuh.'}\nKetuk untuk mencatat sudah makan.`,
-        icon: 'favicon.svg',
-        badge: 'favicon.svg',
-        tag: `mealmate-${schedule.id}-${Date.now()}`,
-        requireInteraction: true,
-        vibrate: [200, 100, 200]
-      };
-
-      const notif = new Notification(title, options);
-
-      notif.onclick = () => {
-        window.focus();
-        if (window.app && window.app.openAlarmModal) {
-          window.app.openAlarmModal(schedule);
-        }
-        notif.close();
-      };
-
-      return notif;
-    } catch (err) {
-      console.warn('Could not display system notification:', err);
-      return null;
-    }
-  }
-
-  showTestNotification() {
-    if (!this.isSupported) {
-      alert('Browser Anda tidak mendukung Web Notification API.');
-      return;
-    }
-
-    if (Notification.permission === 'granted') {
-      const notif = new Notification('MealMate – Notifikasi Berfungsi! ✨', {
-        body: 'Notifikasi browser Anda sudah aktif dan siap mengingatkan jadwal makan harian.',
-        icon: 'favicon.svg'
-      });
-      notif.onclick = () => {
-        window.focus();
-        notif.close();
-      };
+        const notification = new Notification(title, notifOptions);
+        
+        notification.onclick = function() {
+          window.focus();
+          notification.close();
+        };
+      } catch (e) {
+        console.warn('Native notification failed, falling back to toast:', e);
+        this.showToast(`${title} - ${options.body || ''}`);
+      }
     } else {
-      this.requestPermission().then(res => {
-        if (res.success) {
-          this.showTestNotification();
-        } else {
-          alert('Izin notifikasi belum diberikan atau diblokir pada browser.');
+      // 2. Fallback jika notifikasi OS diblokir HP: Tampilkan Toast Banner di layar
+      this.showToast(`${title} - ${options.body || ''}`);
+    }
+  },
+
+  // Tes kirim notifikasi
+  testNotification() {
+    if (this.getPermissionStatus() !== 'granted') {
+      this.requestPermission().then(granted => {
+        if (granted) {
+          this.sendNotification('Tes Notifikasi MealMate 🥗', {
+            body: 'Notifikasi berhasil diaktifkan! Pengingat makan Anda akan muncul tepat waktu.'
+          });
         }
       });
+    } else {
+      this.sendNotification('Tes Notifikasi MealMate 🥗', {
+        body: 'Notifikasi berhasil diaktifkan! Pengingat makan Anda akan muncul tepat waktu.'
+      });
     }
-  }
-}
+  },
 
-window.notificationService = new NotificationService();
+  // Memperbarui UI tombol status notifikasi
+  updateUIStatus() {
+    const statusText = document.getElementById('notifStatusExplanation');
+    const reqBtn = document.getElementById('settingRequestNotifBtn');
+    const bannerBtn = document.getElementById('bannerEnableNotifBtn');
+
+    const status = this.getPermissionStatus();
+
+    if (status === 'granted') {
+      if (statusText) statusText.innerText = 'Status: Izin Notifikasi Aktif (Disetujui) ✅';
+      if (reqBtn) {
+        reqBtn.innerText = 'Notifikasi Aktif';
+        reqBtn.disabled = true;
+        reqBtn.style.opacity = '0.6';
+      }
+      if (bannerBtn) bannerBtn.style.display = 'none';
+    } else if (status === 'denied') {
+      if (statusText) statusText.innerText = 'Status: Ditolak oleh Browser ❌ (Aktifkan di Pengaturan HP)';
+    } else {
+      if (statusText) statusText.innerText = 'Minta izin browser untuk memunculkan notifikasi di layar HP.';
+    }
+  },
+
+  // Toast Notification internal (Banner Muncul di Layar HP)
+  showToast(message) {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:8px; width:90%; max-width:400px; pointer-events:none;';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.style.cssText = 'background:var(--sage-500, #55856F); color:#fff; padding:12px 16px; border-radius:12px; font-size:0.85rem; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.15); text-align:center; transition:all 0.3s ease; pointer-events:auto;';
+    toast.innerText = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
+  }
+};
