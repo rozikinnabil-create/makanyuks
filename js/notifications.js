@@ -1,35 +1,32 @@
 /* ==========================================================================
-   MEALMATE - NOTIFICATION SYSTEM ENGINE
+   MAKANYUKS - NOTIFICATION ENGINE
    ========================================================================== */
 
 const NotificationEngine = {
-  // Cek apakah browser mendukung Web Notification API
   isSupported() {
     return 'Notification' in window;
   },
 
-  // Dapatkan status izin saat ini
   getPermissionStatus() {
     if (!this.isSupported()) return 'unsupported';
     return Notification.permission;
   },
 
-  // Minta izin notifikasi dari pengguna
   async requestPermission() {
     if (!this.isSupported()) {
-      alert('Browser Anda tidak mendukung Web Notification API.');
+      this.showToast('Browser Anda tidak mendukung Web Notification API.');
       return false;
     }
 
     try {
       const permission = await Notification.requestPermission();
       this.updateUIStatus();
-      
+
       if (permission === 'granted') {
-        this.showToast('Izin notifikasi berhasil diberikan! 🔔');
+        this.showToast('Izin notifikasi berhasil diaktifkan! 🔔');
         return true;
       } else if (permission === 'denied') {
-        alert('Izin notifikasi ditolak. Harap izinkan notifikasi di Pengaturan Browser HP Anda.');
+        this.showToast('Izin notifikasi ditolak di browser Anda.');
         return false;
       }
     } catch (err) {
@@ -38,54 +35,47 @@ const NotificationEngine = {
     return false;
   },
 
-  // Kirim notifikasi desktop / HP
   sendNotification(title, options = {}) {
-    // 1. Jika izin diberikan, tampilkan notifikasi sistem OS
     if (this.isSupported() && Notification.permission === 'granted') {
       try {
         const notifOptions = {
           icon: 'favicon.svg',
           badge: 'favicon.svg',
           vibrate: [200, 100, 200],
-          tag: 'mealmate-notification',
+          tag: 'makanyuks-notification',
           renotify: true,
-          ...options
+          body: options.body || ''
         };
 
         const notification = new Notification(title, notifOptions);
-        
         notification.onclick = function() {
           window.focus();
           notification.close();
         };
       } catch (e) {
-        console.warn('Native notification failed, falling back to toast:', e);
         this.showToast(`${title} - ${options.body || ''}`);
       }
     } else {
-      // 2. Fallback jika notifikasi OS diblokir HP: Tampilkan Toast Banner di layar
+      // Fallback Notifikasi Toast jika notifikasi OS HP diblokir
       this.showToast(`${title} - ${options.body || ''}`);
     }
   },
 
-  // Tes kirim notifikasi
   testNotification() {
-    if (this.getPermissionStatus() !== 'granted') {
+    const status = this.getPermissionStatus();
+    if (status !== 'granted') {
       this.requestPermission().then(granted => {
-        if (granted) {
-          this.sendNotification('Tes Notifikasi MealMate 🥗', {
-            body: 'Notifikasi berhasil diaktifkan! Pengingat makan Anda akan muncul tepat waktu.'
-          });
-        }
+        this.sendNotification('Tes Notifikasi Makanyuks 🥗', {
+          body: 'Notifikasi berhasil! Pengingat makan Anda akan muncul tepat waktu.'
+        });
       });
     } else {
-      this.sendNotification('Tes Notifikasi MealMate 🥗', {
-        body: 'Notifikasi berhasil diaktifkan! Pengingat makan Anda akan muncul tepat waktu.'
+      this.sendNotification('Tes Notifikasi Makanyuks 🥗', {
+        body: 'Notifikasi berhasil! Pengingat makan Anda akan muncul tepat waktu.'
       });
     }
   },
 
-  // Memperbarui UI tombol status notifikasi
   updateUIStatus() {
     const statusText = document.getElementById('notifStatusExplanation');
     const reqBtn = document.getElementById('settingRequestNotifBtn');
@@ -94,21 +84,16 @@ const NotificationEngine = {
     const status = this.getPermissionStatus();
 
     if (status === 'granted') {
-      if (statusText) statusText.innerText = 'Status: Izin Notifikasi Aktif (Disetujui) ✅';
+      if (statusText) statusText.innerText = 'Status: Notifikasi Aktif ✅';
       if (reqBtn) {
-        reqBtn.innerText = 'Notifikasi Aktif';
-        reqBtn.disabled = true;
-        reqBtn.style.opacity = '0.6';
+        reqBtn.innerText = 'Notifikasi Aktif ✅';
       }
       if (bannerBtn) bannerBtn.style.display = 'none';
     } else if (status === 'denied') {
-      if (statusText) statusText.innerText = 'Status: Ditolak oleh Browser ❌ (Aktifkan di Pengaturan HP)';
-    } else {
-      if (statusText) statusText.innerText = 'Minta izin browser untuk memunculkan notifikasi di layar HP.';
+      if (statusText) statusText.innerText = 'Status: Ditolak oleh Browser ❌';
     }
   },
 
-  // Toast Notification internal (Banner Muncul di Layar HP)
   showToast(message) {
     let container = document.getElementById('toastContainer');
     if (!container) {
@@ -128,6 +113,6 @@ const NotificationEngine = {
       toast.style.opacity = '0';
       toast.style.transform = 'translateY(10px)';
       setTimeout(() => toast.remove(), 300);
-    }, 4000);
+    }, 3500);
   }
 };
